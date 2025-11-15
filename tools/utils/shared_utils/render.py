@@ -1,18 +1,18 @@
 import os
-from PIL import Image
 from pathlib import Path
 from numpy import array
 
+def combine_side_by_side(left:str, right:str) -> str:
+    left_lines = left.splitlines()
+    right_lines = right.splitlines()
 
-def save_evolution(values: list[list[int]], path: Path) -> None:
-    arr = array(values, dtype="uint8")
-    N = arr.max()
-    if N == 0:
-        img_data = arr.astype("uint8")  # all zeros, no scaling needed
-    else:
-    	img_data = (arr / N * 255).astype("uint8")
-    img = Image.fromarray(img_data, mode="L")
-    img.save(str(path))
+    max_len = max(len(left_lines), len(right_lines))
+    left_lines += [''] * (max_len - len(left_lines))
+    right_lines += [''] * (max_len - len(right_lines))
+    combined = "" 
+    for l, r in zip(left_lines, right_lines):
+        combined += f"{l:<40} | {r}\n"
+    return combined 
 
 
 def colour(i: int) -> tuple[int, int, int]:

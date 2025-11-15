@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+
+import click
+from pathlib import Path
+import numpy as np
+from pyfiglet import Figlet
+
+from utils import (
+  FFNN_ONESHOT, 
+  FFNN_ITERATIVE, 
+  Activation, 
+  render_halfblock, 
+  combine_side_by_side, 
+  CellularAutomata, 
+  save_evolution, 
+  load_evolution,
+  first_differing_row
+)  
+
+DEFAULT_HIDDEN_LAYERS = [50, 100, 50]
+DEFAULT_ACTIVATION = "relu"
+DEFAULT_BINARISATION = 0.5
+DEFAULT_LEARN = "one-shot"
+
+@click.command(name="learn")
+@click.option("--input", "-i", type=Path, required=True, help="Input CA evolution image (PNG/JPG).")
+@click.option("--output", "-o", type=Path, default=None, help="Output path for saved weights and predicted image.")
+@click.option("--learn", "-l", type=click.Choice(["one-shot", "iterative"]), default=DEFAULT_LEARN, help="Learning method. Pseudo-Inverse is used for one-shot learning.  Gradient Descent is used for Iterative")
+@click.option("--weights", "-w", type=Path, default=None, help="Path to load existing weights.")
+@click.option("--hidden-layers", "-h", type=int, multiple=True, default=DEFAULT_HIDDEN_LAYERS, help="Hidden layer sizes.")
+@click.option("--activation", "-a", type=click.Choice(["relu", "tan"]), default=DEFAULT_ACTIVATION, help="Activation function.")
+@click.option("--binarisation-threshold", "-b", type=float, default=DEFAULT_BINARISATION, help="Threshold for binarisation.")
+def learn_cli(input, output, learn, weights, hidden_layers, activation, binarisation_threshold):
+    # =========================
+    # Load evolution from image
+    # =========================
+    ca_evolution = load_evolution(input)
+    n_timesteps, n_cells = ca_evolution.shape
+
+    # =========================
+    # Banner
+    # =========================
+    f = Figlet(font="smslant")
+    banner = f.renderText("Learning")
+    click.secho(banner, fg="red", bold=True)
+
+    # =========================
+    # Config display
+    # =========================
+    click.secho("Configuration:", fg="yellow", bold=True)
+    click.echo(f"Input: {input}")
+    click.echo(f"Output: {output}")
+    click.echo(f"Learn method: {learn}")
+    click.echo(f"Weights path: {weights}")
+    click.echo(f"Hidden layers: {hidden_layers}")
+    click.echo(f"Activation: {activation}")
+    click.echo(f"Binarisation threshold: {binarisation_threshold}")
+
+    # =========================
+    # Prepare train data
+    # =========================
+    X = ca_evolution[:-1]
+    Y = ca_evolution[1:]
+    _, d_i = X.shape
+    _, d_o = Y.shape
+
+    # =========================
+    # Map activation string to Activation enum
+    # =========================
+    activation_map = {
+        "relu": Activation.RELU,
+        "tan": Activation.TAN,
+    }
+    activation_enum = activation_map[activation]
+
+    # =========================
+    # Initialize model
+    # =========================
+    FFNN = FFNN_ONESHOT if learn=="one-shot" else FFNN_ITERATIVE if learn=="iterative" else None 
+    model = FFNN(
+        input_dimension=d_i,
+        hidden_dimensions=list(hidden_layers),
+        output_dimension=d_o,
+        activation=activation_enum,
+    )
+
+    # =========================
+    # Load weights if provided
+    # =========================
+    if weights is not None:
+        model.load(weights)
+        click.secho(f"Loaded weights from {weights}", fg="green")
+    else:
+        model.fit(X, Y)
+        click.secho("Model training complete.", fg="green")
+
+        # Save weights if output path provided
+        if output is None:
+            suffixes = {"one-shot":".npz", "iterative":".joblib"}
+            output = input.with_suffix(suffixes[learn])
+        model.save(output)
+        click.secho(f"Weights saved to {output}", fg="green")
+    # =========================
+    # Predictions
+    # =========================
+    Y_raw = model.predict(X)
+    Y_hat = (Y_raw > binarisation_threshold).astype(int)
+
+    # =========================
+    # Render CA evolution
+    # =========================
+    left = render_halfblock(values=X)
+    right = render_halfblock(values=Y_hat)
+    combined = combine_side_by_side(left=left, right=right)
+    click.echo(combined)
+    raw_prediction_output = f"{output}_prediction{input.suffix}" 
+    save_evolution(Y_raw, raw_prediction_output)
+    click.secho(f"Prediction saved to {raw_prediction_output}", fg="green")  
+    prediction_output = f"{output}_prediction-binarised{input.suffix}"       
+    save_evolution(Y_hat, prediction_output)
+    click.secho(f"Prediction saved to {prediction_output}", fg="green")
+    diff_score = first_differing_row(values1=Y_hat, values2=Y)
+    click.echo(diff_score)
+
+if __name__ == "__main__":
+    learn_cli()
+
