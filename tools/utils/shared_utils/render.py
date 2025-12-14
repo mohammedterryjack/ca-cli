@@ -2,17 +2,48 @@ import os
 from pathlib import Path
 from numpy import array
 
-def combine_side_by_side(left:str, right:str) -> str:
+
+def line_plot(data: list[float], width: int = 60) -> str:
+    if len(data) == 0:
+        return ""
+
+    ticks = "▁▂▃▄▅▆▇█"
+
+    if len(data) > width:
+        step = len(data) / width
+        data = [data[int(i * step)] for i in range(width)]
+
+    mn, mx = min(data), max(data)
+    rng = mx - mn if mx > mn else 1e-9
+
+    spark = "".join(ticks[int((x - mn) / rng * (len(ticks) - 1))] for x in data)
+    return spark
+
+
+def bar_plot(scores: list[float], width: int = 40):
+    """
+    Plot similarity values vertically as ASCII bars in the terminal.
+    Each score should be in [0, 1].
+    """
+    for i, s in enumerate(scores):
+        # Clamp scores to [0, 1]
+        s = max(0.0, min(1.0, s))
+        bar_len = round(s * width)
+        bar = "█" * bar_len
+        print(f"{i:3d} | {bar:<{width}}  {s:.2f}")
+
+
+def combine_side_by_side(left: str, right: str) -> str:
     left_lines = left.splitlines()
     right_lines = right.splitlines()
 
     max_len = max(len(left_lines), len(right_lines))
-    left_lines += [''] * (max_len - len(left_lines))
-    right_lines += [''] * (max_len - len(right_lines))
-    combined = "" 
+    left_lines += [""] * (max_len - len(left_lines))
+    right_lines += [""] * (max_len - len(right_lines))
+    combined = ""
     for l, r in zip(left_lines, right_lines):
         combined += f"{l:<40} | {r}\n"
-    return combined 
+    return combined
 
 
 def colour(i: int) -> tuple[int, int, int]:

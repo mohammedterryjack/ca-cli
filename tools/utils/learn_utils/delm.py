@@ -1,13 +1,13 @@
 """Multilayered Feedforward Neural Network using Pseudoinverse"""
 
-from pathlib import Path 
+from pathlib import Path
 
 from numpy import ndarray, argmax, where
 from numpy.random import seed, uniform
 from numpy.linalg import pinv
 from numpy import savez, load
 
-from utils.learn_utils.activation import (
+from tools.utils.learn_utils.activation import (
     Activation,
     inverse_activation,
     activation_function,
@@ -21,6 +21,7 @@ class FFNN_ONESHOT:
         hidden_dimensions: list[int],
         output_dimension: int,
         activation: Activation,
+        **kwargs,
     ) -> None:
         seed(42)
         self.d_o = output_dimension
@@ -65,10 +66,9 @@ class FFNN_ONESHOT:
             Y_hat = activation(Y_hat @ W)
         return Y_hat
 
-    
     def save(self, path: Path) -> None:
         savez(str(path), *self.Ws)
-    
+
     def load(self, path: Path) -> None:
         data = load(str(path))
         self.Ws = [data[f"arr_{i}"] for i in range(len(data.files))]

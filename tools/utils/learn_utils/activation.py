@@ -22,6 +22,3 @@ def inverse_activation(activation: Activation) -> callable:
         Activation.TAN: arctan,
     }.get(activation, lambda x: x)
     return lambda x: nan_to_num(f(x), nan=0.0)
-
-
-

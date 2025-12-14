@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 from sklearn.neural_network import MLPRegressor
 
-from utils.learn_utils.activation import Activation, activation_function
+from tools.utils.learn_utils.activation import Activation, activation_function
 
 
 class FFNN_ITERATIVE:
@@ -16,6 +16,8 @@ class FFNN_ITERATIVE:
         hidden_dimensions: list[int],
         output_dimension: int,
         activation: Activation,
+        learning_rate: float,
+        max_iterations: int,
     ) -> None:
         # Map Activation enum to sklearn activation string
         activation_map = {
@@ -27,9 +29,9 @@ class FFNN_ITERATIVE:
         self.model = MLPRegressor(
             hidden_layer_sizes=tuple(hidden_dimensions),
             activation=activation_str,
-            solver="adam",        # uses gradient descent with adaptive learning
-            max_iter=5000,
-            learning_rate_init=0.001,
+            solver="adam",  # uses gradient descent with adaptive learning
+            max_iter=max_iterations,
+            learning_rate_init=learning_rate,
             random_state=42,
             verbose=True,
         )
@@ -52,10 +54,11 @@ class FFNN_ITERATIVE:
     def save(self, path: Path) -> None:
         """Save the model weights and architecture."""
         from joblib import dump
+
         dump(self.model, path)
-    
+
     def load(self, path: Path) -> None:
         """Load model weights and architecture."""
         from joblib import load
-        self.model = load(path)
 
+        self.model = load(path)
