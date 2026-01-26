@@ -11,6 +11,7 @@ from tools.utils import (
     evolution_to_1d_sequence_cosine,
     evolution_to_1d_sequence_gray,
     load_evolutions_from_parquet,
+    save_as_recurrence_map
 )
 
 
@@ -80,6 +81,7 @@ def chaos_cli(input: Path, encoding: str, output: Path, angles: int, compare:boo
 
             plt.savefig(path_save / "trajectory.png", dpi=300, bbox_inches="tight")
             plt.close('all') 
+            save_as_recurrence_map(timeseries=phi, save_path=path_save/"delay_map.png")
         chaoticity = O1TestForChaos.test_for_chaos(
             observables=phi, n_angles=angles, path_save=path_save
         )
