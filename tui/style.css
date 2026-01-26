@@ -1,0 +1,73 @@
+/* Global App style */
+App {
+    background: black;
+    color: #00FF00;
+}
+
+/* Header & Footer */
+Header, Footer {
+    background: black;
+    color: #00FF00;  /* neon green text */
+    border: none;    /* remove default border */
+}
+
+Header .title {
+    color: #00FF00;
+    text-style: bold;
+}
+
+/* Main Menu */
+.title {
+    color: #00FF00;
+    text-style: bold;
+    padding: 1;
+    text-align: center;
+}
+
+.subtitle {
+    color: #00FF00;
+    text-style: italic;
+    padding: 0 1;
+    text-align: center;
+}
+
+/* Buttons */
+Button {
+    background: black;
+    color: #00FF00;
+    border: round green;
+    padding: 0 1;
+}
+
+Button:hover {
+    background: #003300;
+    color: #00FF00;
+}
+
+
+/* Output areas */
+Static {
+    background: black;
+    color: #00FF00;
+    padding: 1;
+    border: tall green;
+}
+.opt-label {
+    width: 20;       /* fixed width for label column */
+    text-align: right;
+    padding: 0;
+    margin: 0;
+    min-height: 1;   /* enough to show text */
+    height: auto;    /* let Textual size correctly */
+    text-align: center;
+    padding-bottom: 1;
+}
+.error {
+    color: red;
+    background: black;
+    border: round red;
+    padding: 1;
+    height: 3;   /* fixed height */
+    overflow: hidden;
+}
+
