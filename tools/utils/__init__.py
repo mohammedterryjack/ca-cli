@@ -11,4 +11,5 @@ from tools.utils.learn_utils.delm import *
 from tools.utils.chaos_utils.zero_one_test import *
 from tools.utils.chaos_utils.encoding import *
 from tools.utils.complexity_utils.visualise import *
+from tools.utils.shared_utils.plot import *
 from tools.utils.complexity_utils.fourier_transform_kolmogorov_complexity import *
